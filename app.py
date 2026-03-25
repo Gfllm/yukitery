@@ -286,11 +286,8 @@ def add_listing():
             flash('Пожалуйста, заполните название и цену', 'error')
             return redirect(url_for('add_listing'))
         
-        try:
-            price = float(price)
-        except ValueError:
-            flash('Цена должна быть числом', 'error')
-            return redirect(url_for('add_listing'))
+        # Сохраняем цену как есть (может быть число или текст "Договорная", "Бесплатно" и т.д.)
+        price = price.strip()
         
         conn = get_db()
         cursor = conn.cursor()
