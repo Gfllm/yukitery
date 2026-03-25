@@ -695,9 +695,53 @@ def server_error(e):
 # ── Context Processor ─────────────────────────────────────────────────────
 @app.context_processor
 def inject_can_post():
-    return dict(can_post_listings=can_post_listings)
+    # Подсчёт непрочитанных сообщений для продавца
+    unread_count = 0
+    user_id = session.get('user_id')
+    if user_id and can_post_listings():
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) as cnt FROM messages WHERE is_read = 0')
+        result = cursor.fetchone()
+        if result:
+            unread_count = result['cnt']
+        conn.close()
+    return dict(can_post_listings=can_post_listings, unread_count=unread_count)
 
 # ── Init & Run ──────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5003, debug=True)
+
+# Reply to message
+@app.route('/reply/<int:message_id>', methods=['GET', 'POST'])
+def reply_message(message_id):
+    if not can_post_listings():
+        flash('У вас нет доступа', 'error')
+        return redirect(url_for('messages'))
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM messages WHERE id = ?', (message_id,))
+    msg = cursor.fetchone()
+    
+    if not msg:
+        conn.close()
+        return render_template('404.html'), 404
+    
+    if request.method == 'POST':
+        reply_text = request.form.get('reply', '').strip()
+        
+        if reply_text:
+            user_id = session.get('user_id')
+            cursor.execute('INSERT INTO messages (user_id, listing_id, message, is_read) VALUES (?, ?, ?, 1)',
+                          (user_id, msg['listing_id'], f"Ответ: {reply_text}"))
+            cursor.execute('UPDATE messages SET is_read = 1 WHERE id = ?', (message_id,))
+            conn.commit()
+            flash('Ответ отправлен!', 'success')
+            return redirect(url_for('messages'))
+    
+    conn.close()
+    return render_template('reply.html', message=msg)
+

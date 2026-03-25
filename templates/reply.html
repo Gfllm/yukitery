@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Ответить на сообщение - K.Pavely{% endblock %}
+
+{% block content %}
+<div class="form-container container">
+    <h1 class="form-title">Ответить на сообщение</h1>
+    
+    <div class="detail-content" style="margin-bottom: 30px;">
+        <p style="color: var(--text-secondary); margin-bottom: 10px;">Сообщение от покупателя:</p>
+        <p style="padding: 15px; background: var(--bg-light); border-radius: 10px;">{{ message.message }}</p>
+    </div>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="reply">Ваш ответ</label>
+            <textarea id="reply" name="reply" class="form-control" placeholder="Введите ваш ответ..." required></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            Отправить ответ
+        </button>
+    </form>
+    
+    <a href="{{ url_for('messages') }}" class="btn btn-secondary" style="margin-top: 15px; width: 100%; text-align: center;">
+        ← К сообщениям
+    </a>
+</div>
+{% endblock %}
