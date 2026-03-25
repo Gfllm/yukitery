@@ -286,8 +286,19 @@ def add_listing():
         conn = get_db()
         cursor = conn.cursor()
         user_id = session.get('user_id')
-        cursor.execute('INSERT INTO listings (user_id, name, price, description, photo) VALUES (?, ?, ?, ?, ?)',
-                       (user_id, name, price, description, photo))
+        
+        # Если user_id есть и пользователь существует, используем его
+        if user_id:
+            cursor.execute('SELECT id FROM users WHERE id = ?', (user_id,))
+            if cursor.fetchone():
+                cursor.execute('INSERT INTO listings (user_id, name, price, description, photo) VALUES (?, ?, ?, ?, ?)',
+                           (user_id, name, price, description, photo))
+            else:
+                cursor.execute('INSERT INTO listings (name, price, description, photo) VALUES (?, ?, ?, ?)',
+                           (name, price, description, photo))
+        else:
+            cursor.execute('INSERT INTO listings (name, price, description, photo) VALUES (?, ?, ?, ?)',
+                       (name, price, description, photo))
         conn.commit()
         conn.close()
         
