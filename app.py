@@ -19,7 +19,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
 
 # Пользователи с правом публикации объявлений
-ADMIN_USERS = ['admin', 'Kurdun']
+ADMIN_USERS = ['Kurdun']
 
 # Email настройки
 SMTP_HOST = 'smtp.gmail.com'
