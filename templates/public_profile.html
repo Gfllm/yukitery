@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} — Yukitery{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-avatar">
+        {% if user.avatar %}
+            <img src="{{ url_for('uploaded_file', filename=user.avatar) }}" alt="">
+        {% else %}
+            {{ user.username[0]|upper }}
+        {% endif %}
+    </div>
+    <div class="profile-info">
+        <h1>{{ user.username }}</h1>
+        {% if user.bio %}<p>{{ user.bio }}</p>{% endif %}
+        {% if user.city %}<p style="color:var(--text-muted);font-size:0.9rem;">📍 {{ user.city }}</p>{% endif %}
+        <p style="color:var(--text-muted);font-size:0.85rem;">На Yukitery с {{ user.created_at[:10] }}</p>
+    </div>
+</div>
+
+<h2 style="font-size:1.3rem;font-weight:600;margin-bottom:20px;">Объявления пользователя</h2>
+
+{% if listings %}
+<div class="listings-grid">
+    {% for l in listings %}
+    <a href="{{ url_for('listing_detail', listing_id=l.id) }}" class="listing-card">
+        <div class="listing-card-img">
+            {% set imgs = l.images.split(',') if l.images else [] %}
+            {% if imgs and imgs[0] %}
+                <img src="{{ url_for('uploaded_file', filename=imgs[0]) }}" alt="" loading="lazy">
+            {% else %}
+                <div class="listing-no-img">📷</div>
+            {% endif %}
+        </div>
+        <div class="listing-card-body">
+            <div class="listing-card-title">{{ l.title }}</div>
+            <div class="listing-card-price">{% if l.price > 0 %}{{ "{:,.0f}".format(l.price).replace(",", " ") }} ₽{% else %}Бесплатно{% endif %}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📭</div>
+    <div class="empty-state-text">Нет объявлений</div>
+</div>
+{% endif %}
+{% endblock %}

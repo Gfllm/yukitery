@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Yukitery{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="{{ url_for('index') }}" class="logo">
+                <span class="logo-icon">❄</span>
+                <span class="logo-text">Yukitery</span>
+            </a>
+
+            <div class="nav-search">
+                <form action="{{ url_for('index') }}" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="Поиск объявлений..." value="{{ request.args.get('q', '') }}" class="search-input">
+                    <button type="submit" class="search-btn">⌕</button>
+                </form>
+            </div>
+
+            <div class="nav-actions">
+                {% if current_user %}
+                    <a href="{{ url_for('new_listing') }}" class="btn btn-accent btn-sm">+ Подать</a>
+                    <a href="{{ url_for('messages_list') }}" class="nav-link messages-link">
+                        💬
+                        {% if unread_messages > 0 %}
+                            <span class="badge">{{ unread_messages }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('favorites') }}" class="nav-link">♡</a>
+                    <div class="user-menu">
+                        <button class="user-menu-btn" onclick="toggleUserMenu()">
+                            {% if current_user.avatar %}
+                                <img src="{{ url_for('uploaded_file', filename=current_user.avatar) }}" class="user-avatar-sm" alt="">
+                            {% else %}
+                                <span class="user-avatar-sm placeholder-avatar">{{ current_user.username[0]|upper }}</span>
+                            {% endif %}
+                            <span class="user-name-nav">{{ current_user.username }}</span>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="{{ url_for('profile') }}">Мой профиль</a>
+                            <a href="{{ url_for('favorites') }}">Избранное</a>
+                            <a href="{{ url_for('messages_list') }}">Сообщения</a>
+                            <a href="{{ url_for('edit_profile') }}">Настройки</a>
+                            <hr>
+                            <a href="{{ url_for('logout') }}" class="logout-link">Выйти</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-ghost btn-sm">Войти</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-accent btn-sm">Регистрация</a>
+                {% endif %}
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        {% if current_user %}
+            <a href="{{ url_for('new_listing') }}">+ Подать объявление</a>
+            <a href="{{ url_for('messages_list') }}">💬 Сообщения {% if unread_messages > 0 %}({{ unread_messages }}){% endif %}</a>
+            <a href="{{ url_for('favorites') }}">♡ Избранное</a>
+            <a href="{{ url_for('profile') }}">Профиль</a>
+            <a href="{{ url_for('edit_profile') }}">Настройки</a>
+            <a href="{{ url_for('logout') }}">Выйти</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Войти</a>
+            <a href="{{ url_for('register') }}">Регистрация</a>
+        {% endif %}
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">
+            <span>{{ msg }}</span>
+            <button onclick="this.parentElement.remove()" class="flash-close">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="logo-icon">❄</span> Yukitery
+            </div>
+            <div class="footer-copy">© 2026 Yukitery. Все права защищены.</div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleUserMenu() {
+            document.getElementById('userDropdown').classList.toggle('show');
+        }
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('show');
+        }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.user-menu')) {
+                const dd = document.getElementById('userDropdown');
+                if (dd) dd.classList.remove('show');
+            }
+        });
+        // Auto-dismiss flash
+        setTimeout(() => {
+            document.querySelectorAll('.flash').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(-10px)';
+                setTimeout(() => el.remove(), 300);
+            });
+        }, 5000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

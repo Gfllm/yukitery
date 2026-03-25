@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Чат — Yukitery{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <a href="{{ url_for('messages_list') }}" style="color:var(--text-muted);font-size:1.2rem;">←</a>
+        <div>
+            <div class="chat-header-title">{{ other_name }}</div>
+            <a href="{{ url_for('listing_detail', listing_id=conv.listing_id) }}" class="chat-header-sub" style="color:var(--accent);">{{ conv.listing_title }}</a>
+        </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        {% for m in messages %}
+        <div class="msg {% if m.sender_id == current_user.id %}msg-mine{% else %}msg-other{% endif %}">
+            {% if m.sender_id != current_user.id %}
+            <div class="msg-sender">{{ m.username }}</div>
+            {% endif %}
+            <div class="msg-text">{{ m.text }}</div>
+            <div class="msg-time">{{ m.created_at[11:16] }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="typingIndicator" class="typing-indicator" style="display:none;padding:0 24px;">Печатает...</div>
+
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="msgInput" placeholder="Введите сообщение..." autocomplete="off" maxlength="2000">
+        <button class="chat-send" onclick="sendMsg()" id="sendBtn">➤</button>
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    const convId = {{ conv.id }};
+    const myId = {{ current_user.id }};
+    const chatBox = document.getElementById('chatMessages');
+    const msgInput = document.getElementById('msgInput');
+
+    socket.emit('join', { conv_id: convId });
+
+    // Scroll to bottom
+    function scrollBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    scrollBottom();
+
+    // Receive messages
+    socket.on('new_message', (data) => {
+        const div = document.createElement('div');
+        div.className = 'msg ' + (data.sender_id === myId ? 'msg-mine' : 'msg-other');
+
+        let html = '';
+        if (data.sender_id !== myId) {
+            html += `<div class="msg-sender">${escapeHtml(data.username)}</div>`;
+        }
+        html += `<div class="msg-text">${escapeHtml(data.text)}</div>`;
+        html += `<div class="msg-time">${data.time}</div>`;
+        div.innerHTML = html;
+        chatBox.appendChild(div);
+        scrollBottom();
+
+        // Hide typing
+        document.getElementById('typingIndicator').style.display = 'none';
+    });
+
+    // Typing indicator
+    let typingTimeout;
+    socket.on('user_typing', () => {
+        const ti = document.getElementById('typingIndicator');
+        ti.style.display = 'block';
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => { ti.style.display = 'none'; }, 2000);
+    });
+
+    msgInput.addEventListener('input', () => {
+        socket.emit('typing', { conv_id: convId });
+    });
+
+    // Send message
+    function sendMsg() {
+        const text = msgInput.value.trim();
+        if (!text) return;
+        socket.emit('send_message', { conv_id: convId, text: text });
+        msgInput.value = '';
+        msgInput.focus();
+    }
+
+    msgInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMsg();
+        }
+    });
+
+    function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+</script>
+{% endblock %}

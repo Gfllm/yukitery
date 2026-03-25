@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Избранное — Yukitery{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Избранное</h1>
+<p class="page-subtitle">Сохранённые объявления</p>
+
+{% if listings %}
+<div class="listings-grid">
+    {% for l in listings %}
+    <a href="{{ url_for('listing_detail', listing_id=l.id) }}" class="listing-card">
+        <div class="listing-card-img">
+            {% set imgs = l.images.split(',') if l.images else [] %}
+            {% if imgs and imgs[0] %}
+                <img src="{{ url_for('uploaded_file', filename=imgs[0]) }}" alt="" loading="lazy">
+            {% else %}
+                <div class="listing-no-img">📷</div>
+            {% endif %}
+        </div>
+        <div class="listing-card-body">
+            {% if l.cat_name %}
+                <span class="listing-card-cat">{{ l.cat_icon }} {{ l.cat_name }}</span>
+            {% endif %}
+            <div class="listing-card-title">{{ l.title }}</div>
+            <div class="listing-card-price">{% if l.price > 0 %}{{ "{:,.0f}".format(l.price).replace(",", " ") }} ₽{% else %}Бесплатно{% endif %}</div>
+            <div class="listing-card-meta"><span>{{ l.username }}</span></div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">♡</div>
+    <div class="empty-state-text">Вы ещё ничего не сохранили</div>
+    <a href="{{ url_for('index') }}" class="btn btn-accent">Смотреть объявления</a>
+</div>
+{% endif %}
+{% endblock %}

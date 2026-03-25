@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Профиль — Yukitery{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="profile-avatar">
+        {% if current_user.avatar %}
+            <img src="{{ url_for('uploaded_file', filename=current_user.avatar) }}" alt="">
+        {% else %}
+            {{ current_user.username[0]|upper }}
+        {% endif %}
+    </div>
+    <div class="profile-info">
+        <h1>{{ current_user.username }}</h1>
+        {% if current_user.bio %}<p>{{ current_user.bio }}</p>{% endif %}
+        {% if current_user.city %}<p style="color:var(--text-muted);font-size:0.9rem;">📍 {{ current_user.city }}</p>{% endif %}
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="profile-stat-num">{{ listings|length }}</div>
+                <div class="profile-stat-label">Объявлений</div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-left:auto;">
+        <a href="{{ url_for('edit_profile') }}" class="btn btn-ghost btn-sm">⚙ Настройки</a>
+    </div>
+</div>
+
+<h2 style="font-size:1.3rem;font-weight:600;margin-bottom:20px;">Мои объявления</h2>
+
+{% if listings %}
+<div class="listings-grid">
+    {% for l in listings %}
+    <a href="{{ url_for('listing_detail', listing_id=l.id) }}" class="listing-card">
+        <div class="listing-card-img">
+            {% set imgs = l.images.split(',') if l.images else [] %}
+            {% if imgs and imgs[0] %}
+                <img src="{{ url_for('uploaded_file', filename=imgs[0]) }}" alt="" loading="lazy">
+            {% else %}
+                <div class="listing-no-img">📷</div>
+            {% endif %}
+        </div>
+        <div class="listing-card-body">
+            <div class="listing-card-title">{{ l.title }}</div>
+            <div class="listing-card-price">
+                {% if l.price > 0 %}{{ "{:,.0f}".format(l.price).replace(",", " ") }} ₽{% else %}Бесплатно{% endif %}
+            </div>
+            <div class="listing-card-meta">
+                <span>👁 {{ l.views }}</span>
+                <span style="padding:2px 8px;border-radius:50px;background:{% if l.status == 'active' %}rgba(52,211,153,0.15);color:var(--success){% else %}rgba(248,113,113,0.15);color:var(--error){% endif %};font-size:0.75rem;">{{ 'Активно' if l.status == 'active' else 'Закрыто' }}</span>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📝</div>
+    <div class="empty-state-text">У вас пока нет объявлений</div>
+    <a href="{{ url_for('new_listing') }}" class="btn btn-accent">Подать объявление</a>
+</div>
+{% endif %}
+{% endblock %}

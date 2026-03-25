@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — Yukitery{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-title">Создать аккаунт</div>
+        <p class="auth-subtitle">
+            {% if step == '2' %}
+                Код отправлен на {{ email }}
+            {% else %}
+                Присоединяйтесь к Yukitery
+            {% endif %}
+        </p>
+
+        {% if step == '1' %}
+        <form method="POST" action="{{ url_for('register') }}">
+            <input type="hidden" name="step" value="1">
+            <div class="form-group">
+                <label class="form-label">Имя пользователя</label>
+                <input type="text" name="username" class="form-input" placeholder="username" value="{{ username|default('') }}" required minlength="3" pattern="[a-zA-Z0-9_]+" autocomplete="username">
+                <div class="form-hint">Латиница, цифры, _ (мин. 3 символа)</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input" placeholder="you@email.com" value="{{ email|default('') }}" required autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Пароль</label>
+                <input type="password" name="password" class="form-input" placeholder="Минимум 6 символов" required minlength="6" autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn btn-accent btn-block btn-lg">Продолжить</button>
+        </form>
+
+        {% elif step == '2' %}
+        <form method="POST" action="{{ url_for('register') }}" id="codeForm">
+            <input type="hidden" name="step" value="2">
+            <input type="hidden" name="code" id="codeHidden">
+
+            <div class="code-input-group">
+                {% for i in range(6) %}
+                <input type="text" maxlength="1" class="code-digit" data-index="{{ i }}" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-accent btn-block btn-lg" id="verifyBtn" disabled>Подтвердить</button>
+        </form>
+
+        <div class="auth-divider">
+            <span id="resendTimer">Отправить повторно через <strong id="countdown">60</strong>с</span>
+            <button class="btn btn-ghost btn-sm" id="resendBtn" style="display:none;" onclick="resendCode()">Отправить код повторно</button>
+        </div>
+
+        <script>
+            const digits = document.querySelectorAll('.code-digit');
+            const hiddenInput = document.getElementById('codeHidden');
+            const verifyBtn = document.getElementById('verifyBtn');
+
+            function updateCode() {
+                const code = Array.from(digits).map(d => d.value).join('');
+                hiddenInput.value = code;
+                verifyBtn.disabled = code.length < 6;
+            }
+
+            digits.forEach((input, i) => {
+                input.addEventListener('input', (e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    e.target.value = val;
+                    if (val && i < digits.length - 1) digits[i+1].focus();
+                    updateCode();
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                        digits[i-1].focus();
+                    }
+                });
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const data = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+                    data.split('').forEach((ch, j) => {
+                        if (digits[j]) digits[j].value = ch;
+                    });
+                    if (data.length > 0) digits[Math.min(data.length, 5)].focus();
+                    updateCode();
+                });
+            });
+            digits[0].focus();
+
+            // Resend timer
+            let remaining = 60;
+            const countdownEl = document.getElementById('countdown');
+            const timerEl = document.getElementById('resendTimer');
+            const resendBtnEl = document.getElementById('resendBtn');
+            const timer = setInterval(() => {
+                remaining--;
+                countdownEl.textContent = remaining;
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    timerEl.style.display = 'none';
+                    resendBtnEl.style.display = 'inline-flex';
+                }
+            }, 1000);
+
+            function resendCode() {
+                resendBtnEl.disabled = true;
+                resendBtnEl.textContent = 'Отправка...';
+                fetch('/resend-code', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        resendBtnEl.textContent = data.ok ? 'Код отправлен!' : data.msg;
+                        setTimeout(() => {
+                            resendBtnEl.textContent = 'Отправить код повторно';
+                            resendBtnEl.disabled = false;
+                        }, 3000);
+                    });
+            }
+        </script>
+        {% endif %}
+
+        <div class="auth-footer">
+            Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

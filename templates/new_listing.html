@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Новое объявление — Yukitery{% endblock %}
+
+{% block content %}
+<div style="max-width: 680px; margin: 0 auto;">
+    <h1 class="page-title">Новое объявление</h1>
+    <p class="page-subtitle">Опишите, что вы продаёте</p>
+
+    <form method="POST" enctype="multipart/form-data" class="card">
+        <div class="form-group">
+            <label class="form-label">Заголовок *</label>
+            <input type="text" name="title" class="form-input" placeholder="Например: iPhone 15 Pro Max 256GB" required minlength="3" maxlength="150">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Категория</label>
+                <select name="category_id" class="form-select">
+                    <option value="">Без категории</option>
+                    {% for c in categories %}
+                    <option value="{{ c.id }}">{{ c.icon }} {{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Цена (₽)</label>
+                <input type="number" name="price" class="form-input" placeholder="0 = бесплатно" min="0" step="1" value="0">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Город</label>
+            <input type="text" name="city" class="form-input" placeholder="Москва" maxlength="100">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Описание *</label>
+            <textarea name="description" class="form-textarea" placeholder="Подробно опишите ваш товар или услугу..." required minlength="10" rows="6"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Фотографии (до 5)</label>
+            <div class="file-input-wrapper" id="dropZone">
+                <input type="file" name="images" multiple accept="image/*" id="fileInput" onchange="previewImages(this)">
+                <div class="file-input-label" id="filePlaceholder">
+                    📷 <span>Нажмите</span> или перетащите фото сюда
+                </div>
+                <div id="imagePreview" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;"></div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-accent btn-block btn-lg">Опубликовать</button>
+    </form>
+</div>
+
+<script>
+function previewImages(input) {
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('filePlaceholder');
+    preview.innerHTML = '';
+
+    if (input.files.length > 0) {
+        placeholder.style.display = 'none';
+        Array.from(input.files).slice(0, 5).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.cssText = 'width:100px;height:75px;object-fit:cover;border-radius:8px;';
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        placeholder.style.display = 'block';
+    }
+}
+
+// Drag and drop
+const dropZone = document.getElementById('dropZone');
+['dragenter','dragover'].forEach(e => {
+    dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.style.borderColor = 'var(--accent)'; });
+});
+['dragleave','drop'].forEach(e => {
+    dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.style.borderColor = ''; });
+});
+dropZone.addEventListener('drop', (ev) => {
+    document.getElementById('fileInput').files = ev.dataTransfer.files;
+    previewImages(document.getElementById('fileInput'));
+});
+</script>
+{% endblock %}
