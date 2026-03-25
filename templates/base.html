@@ -24,7 +24,12 @@
                     {% if can_post_listings() %}
                         <a href="{{ url_for('add_listing') }}" class="btn-primary">Добавить объявление</a>
                         <a href="{{ url_for('settings') }}">Настройки</a>
-                        <a href="{{ url_for('messages') }}">Сообщения</a>
+                        <a href="{{ url_for('messages') }}">
+                            {% if unread_count > 0 %}
+                            <span style="background: red; color: white; border-radius: 50%; padding: 2px 8px; font-size: 0.8rem; margin-left: 5px;">{{ unread_count }}</span>
+                            {% endif %}
+                            Сообщения
+                        </a>
                     {% endif %}
                     <a href="{{ url_for('logout') }}">Выйти ({{ session.get('username') }})</a>
                 {% else %}
