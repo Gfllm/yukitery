@@ -13,7 +13,11 @@ app.secret_key = os.environ.get('SECRET_KEY', 'k-pavely-secret-key-2024')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
 
+# Пароль админа (измените при необходимости)
+ADMIN_PASSWORD = 'K Pavely 2024'
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -68,6 +72,16 @@ def init_db():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# ── Auth Decorator ─────────────────────────────────────────────────────────────
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -141,6 +155,7 @@ def listing_detail(listing_id):
 
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add_listing():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -196,6 +211,7 @@ def add_listing():
 
 
 @app.route('/delete/<int:listing_id>')
+@login_required
 def delete_listing(listing_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -217,6 +233,7 @@ def delete_listing(listing_id):
 
 
 @app.route('/settings', methods=['GET', 'POST'])
+@login_required
 def settings():
     conn = get_db()
     cursor = conn.cursor()
@@ -258,6 +275,26 @@ def settings():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        if password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            flash('Вы вошли как админ!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Неверный пароль!', 'error')
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('is_admin', None)
+    flash('Вы вышли из системы', 'success')
+    return redirect(url_for('index'))
 
 
 # ── Error Handlers ──────────────────────────────────────────────────────────

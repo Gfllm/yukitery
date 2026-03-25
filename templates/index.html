@@ -16,7 +16,9 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Доступные запчасти</h2>
-            <a href="{{ url_for('add_listing') }}" class="btn btn-primary">+ Добавить</a>
+            {% if session.get('is_admin') %}
+                <a href="{{ url_for('add_listing') }}" class="btn btn-primary">+ Добавить</a>
+            {% endif %}
         </div>
 
         {% if listings %}
@@ -45,8 +47,7 @@
             <div class="empty-state">
                 <div class="empty-state-icon">🔧</div>
                 <h3>Пока нет объявлений</h3>
-                <p>Станьте первым, кто добавит запчасть!</p>
-                <a href="{{ url_for('add_listing') }}" class="btn btn-primary" style="margin-top: 20px;">Добавить объявление</a>
+                <p>Запчасти появятся в ближайшее время.</p>
             </div>
         {% endif %}
     </div>

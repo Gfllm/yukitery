@@ -47,17 +47,19 @@
             📞 Позвонить: {{ settings.owner_phone }}
         </a>
         {% else %}
-        <a href="{{ url_for('settings') }}" class="contact-btn" style="background: var(--bg-light); color: var(--text-primary);">
+        <a href="{{ url_for('login') }}" class="contact-btn" style="background: var(--bg-light); color: var(--text-primary);">
             ⚙️ Настройте номер телефона в разделе "Настройки"
         </a>
         {% endif %}
         
+        {% if session.get('is_admin') %}
         <a href="{{ url_for('delete_listing', listing_id=listing.id) }}" 
            class="btn btn-danger" 
            style="margin-top: 20px; width: 100%; text-align: center;"
            onclick="return confirm('Вы уверены, что хотите удалить это объявление?');">
             🗑️ Удалить объявление
         </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

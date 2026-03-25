@@ -17,8 +17,13 @@
             </a>
             <nav class="nav">
                 <a href="{{ url_for('index') }}">Главная</a>
-                <a href="{{ url_for('add_listing') }}" class="btn-primary">Добавить объявление</a>
-                <a href="{{ url_for('settings') }}">Настройки</a>
+                {% if session.get('is_admin') %}
+                    <a href="{{ url_for('add_listing') }}" class="btn-primary">Добавить объявление</a>
+                    <a href="{{ url_for('settings') }}">Настройки</a>
+                    <a href="{{ url_for('logout') }}">Выйти</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Вход</a>
+                {% endif %}
             </nav>
         </div>
     </header>
