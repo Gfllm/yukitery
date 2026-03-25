@@ -607,7 +607,7 @@ def messages():
     
     # Получаем все сообщения для пользователя
     cursor.execute('''
-        SELECT m.*, l.name as listing_name, u.username
+        SELECT m.id, m.message, m.listing_id, m.user_id, m.is_read, m.created_at, l.name as listing_name, u.username
         FROM messages m
         LEFT JOIN listings l ON m.listing_id = l.id
         LEFT JOIN users u ON m.user_id = u.id
@@ -619,12 +619,32 @@ def messages():
     user_messages = []
     if can_post_listings():
         for msg in all_messages:
-            user_messages.append(dict(msg))
+            msg_dict = dict(msg)
+            created_at = msg_dict.get('created_at', '')
+            if created_at:
+                if isinstance(created_at, str):
+                    try:
+                        msg_dict['created_at'] = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+                    except:
+                        msg_dict['created_at'] = datetime.now()
+            else:
+                msg_dict['created_at'] = datetime.now()
+            user_messages.append(msg_dict)
     else:
         # Обычный пользователь видит только свои сообщения
         for msg in all_messages:
             if msg['user_id'] == user_id:
-                user_messages.append(dict(msg))
+                msg_dict = dict(msg)
+                created_at = msg_dict.get('created_at', '')
+                if created_at:
+                    if isinstance(created_at, str):
+                        try:
+                            msg_dict['created_at'] = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+                        except:
+                            msg_dict['created_at'] = datetime.now()
+                else:
+                    msg_dict['created_at'] = datetime.now()
+                user_messages.append(msg_dict)
     
     conn.close()
     return render_template('messages.html', messages=user_messages)
