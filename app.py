@@ -560,6 +560,11 @@ def server_error(e):
     return render_template('500.html'), 500
 
 
+# ── Context Processor ─────────────────────────────────────────────────────
+@app.context_processor
+def inject_can_post():
+    return dict(can_post_listings=can_post_listings)
+
 # ── Init & Run ──────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     init_db()
