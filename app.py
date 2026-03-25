@@ -78,8 +78,25 @@ def index():
     cursor = conn.cursor()
     
     # Получаем все объявления
-    cursor.execute('SELECT * FROM listings ORDER BY created_at DESC')
-    listings = cursor.fetchall()
+    cursor.execute('SELECT id, name, price, photo, description, created_at FROM listings ORDER BY created_at DESC')
+    rows = cursor.fetchall()
+    
+    # Преобразуем строки в словари с правильным форматом даты
+    listings = []
+    for row in rows:
+        listing = dict(row)
+        created_at = listing.get('created_at', '')
+        if created_at:
+            if isinstance(created_at, str):
+                try:
+                    listing['created_at'] = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+                except:
+                    listing['created_at'] = datetime.now()
+            else:
+                listing['created_at'] = created_at
+        else:
+            listing['created_at'] = datetime.now()
+        listings.append(listing)
     
     # Получаем настройки
     cursor.execute('SELECT * FROM settings LIMIT 1')
@@ -95,16 +112,30 @@ def listing_detail(listing_id):
     conn = get_db()
     cursor = conn.cursor()
     
-    cursor.execute('SELECT * FROM listings WHERE id = ?', (listing_id,))
-    listing = cursor.fetchone()
+    cursor.execute('SELECT id, name, price, photo, description, created_at FROM listings WHERE id = ?', (listing_id,))
+    row = cursor.fetchone()
     
     cursor.execute('SELECT * FROM settings LIMIT 1')
     settings = cursor.fetchone()
     
     conn.close()
     
-    if listing is None:
+    if row is None:
         return render_template('404.html'), 404
+    
+    # Преобразуем дату
+    listing = dict(row)
+    created_at = listing.get('created_at', '')
+    if created_at:
+        if isinstance(created_at, str):
+            try:
+                listing['created_at'] = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+            except:
+                listing['created_at'] = datetime.now()
+        else:
+            listing['created_at'] = created_at
+    else:
+        listing['created_at'] = datetime.now()
     
     return render_template('listing.html', listing=listing, settings=settings)
 
@@ -147,9 +178,19 @@ def add_listing():
     
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM settings LIMIT 1')
-    settings = cursor.fetchone()
+    cursor.execute('SELECT call_time_from, call_time_to, owner_name, owner_phone FROM settings LIMIT 1')
+    row = cursor.fetchone()
     conn.close()
+    
+    if row:
+        settings = dict(row)
+    else:
+        settings = {
+            'call_time_from': '09:00',
+            'call_time_to': '21:00',
+            'owner_name': 'K.Pavely',
+            'owner_phone': ''
+        }
     
     return render_template('add.html', settings=settings)
 
@@ -196,9 +237,20 @@ def settings():
         flash('Настройки сохранены!', 'success')
         return redirect(url_for('index'))
     
-    cursor.execute('SELECT * FROM settings LIMIT 1')
-    settings = cursor.fetchone()
+    cursor.execute('SELECT call_time_from, call_time_to, owner_name, owner_phone FROM settings LIMIT 1')
+    row = cursor.fetchone()
     conn.close()
+    
+    # Преобразуем в словарь с значениями по умолчанию
+    if row:
+        settings = dict(row)
+    else:
+        settings = {
+            'call_time_from': '09:00',
+            'call_time_to': '21:00',
+            'owner_name': 'K.Pavely',
+            'owner_phone': ''
+        }
     
     return render_template('settings.html', settings=settings)
 
