@@ -161,8 +161,30 @@ def index():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Получаем объявления
-    cursor.execute('SELECT id, name, price, photo, description, created_at FROM listings ORDER BY created_at DESC')
+    # Параметры поиска и сортировки
+    search = request.args.get('search', '').strip()
+    sort = request.args.get('sort', 'newest')
+    
+    # Базовый запрос
+    query = 'SELECT id, name, price, photo, description, created_at FROM listings'
+    params = []
+    
+    # Добавляем поиск
+    if search:
+        query += ' WHERE name LIKE ? OR description LIKE ?'
+        params = [f'%{search}%', f'%{search}%']
+    
+    # Добавляем сортировку
+    if sort == 'price_low':
+        query += ' ORDER BY price ASC'
+    elif sort == 'price_high':
+        query += ' ORDER BY price DESC'
+    elif sort == 'name':
+        query += ' ORDER BY name ASC'
+    else:
+        query += ' ORDER BY created_at DESC'
+    
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     
     listings = []
@@ -191,7 +213,7 @@ def index():
     
     conn.close()
     
-    return render_template('index.html', listings=listings, settings=settings)
+    return render_template('index.html', listings=listings, settings=settings, search=search, sort=sort)
 
 
 @app.route('/listing/<int:listing_id>')
@@ -478,6 +500,79 @@ def logout():
     session.pop('username', None)
     flash('Вы вышли из системы', 'success')
     return redirect(url_for('index'))
+
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT id, username FROM users WHERE email = ?', (email,))
+        user = cursor.fetchone()
+        
+        if user:
+            # Генерируем новый код сброса
+            reset_code = generate_verification_code()
+            cursor.execute('UPDATE users SET verification_code = ? WHERE id = ?', (reset_code, user['id']))
+            conn.commit()
+            
+            # Отправляем email
+            if send_email(email, 'Код сброса пароля K.Pavely',
+                        f'<h2>Код сброса пароля: {reset_code}</h2><p>Введите этот код для сброса пароля.</p>'):
+                session['reset_user_id'] = user['id']
+                session['reset_email'] = email
+                flash('Код сброса отправлен на email!', 'success')
+                return redirect(url_for('reset_password'))
+            else:
+                flash('Ошибка отправки email. Попробуйте позже.', 'error')
+        else:
+            flash('Email не найден в системе', 'error')
+        
+        conn.close()
+        return redirect(url_for('forgot_password'))
+    
+    return render_template('forgot_password.html')
+
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    user_id = session.get('reset_user_id')
+    if not user_id:
+        flash('Сессия истекла', 'error')
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        new_password = request.form.get('password', '').strip()
+        
+        if len(new_password) < 4:
+            flash('Пароль должен быть не менее 4 символов', 'error')
+            return redirect(url_for('reset_password'))
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT verification_code FROM users WHERE id = ?', (user_id,))
+        row = cursor.fetchone()
+        
+        if row and row['verification_code'] == code:
+            password_hash = generate_password_hash(new_password)
+            cursor.execute('UPDATE users SET password_hash = ?, verification_code = NULL WHERE id = ?', 
+                         (password_hash, user_id))
+            conn.commit()
+            session.pop('reset_user_id', None)
+            session.pop('reset_email', None)
+            flash('Пароль успешно изменён! Войдите с новым паролем.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Неверный код', 'error')
+        
+        conn.close()
+    
+    return render_template('reset_password.html')
 
 
 # ── Messages Routes ─────────────────────────────────────────────────────

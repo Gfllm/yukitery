@@ -16,10 +16,25 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Доступные запчасти</h2>
-            {% if session.get('is_admin') %}
+            {% if session.get('user_id') and can_post_listings() %}
                 <a href="{{ url_for('add_listing') }}" class="btn btn-primary">+ Добавить</a>
             {% endif %}
         </div>
+
+        <!-- Search and Sort -->
+        <form class="search-bar" method="GET">
+            <input type="text" name="search" class="search-input" placeholder="🔍 Поиск по названию..." value="{{ search }}">
+            <select name="sort" class="sort-select">
+                <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Сначала новые</option>
+                <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Сначала дешевые</option>
+                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Сначала дорогие</option>
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>По алфавиту</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Найти</button>
+            {% if search %}
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Сброс</a>
+            {% endif %}
+        </form>
 
         {% if listings %}
             <div class="listings-grid">
@@ -46,8 +61,11 @@
         {% else %}
             <div class="empty-state">
                 <div class="empty-state-icon">🔧</div>
-                <h3>Пока нет объявлений</h3>
-                <p>Запчасти появятся в ближайшее время.</p>
+                <h3>Ничего не найдено</h3>
+                <p>Попробуйте изменить поисковый запрос.</p>
+                {% if search %}
+                    <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: 20px;">Сбросить поиск</a>
+                {% endif %}
             </div>
         {% endif %}
     </div>
