@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ listing.name }} - K.Pavely{% endblock %}
+
+{% block content %}
+<div class="detail-container container">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary" style="margin-bottom: 20px;">← Назад к объявлениям</a>
+    
+    <div class="detail-image">
+        {% if listing.photo %}
+            <img src="{{ url_for('uploaded_file', filename=listing.photo) }}" alt="{{ listing.name }}">
+        {% else %}
+            <div class="no-photo">🚗</div>
+        {% endif %}
+    </div>
+    
+    <div class="detail-content">
+        <h1 class="detail-title">{{ listing.name }}</h1>
+        <div class="detail-price">{{ listing.price }} ₽</div>
+        
+        {% if listing.description %}
+        <div class="detail-description">
+            <h3>Описание</h3>
+            <p>{{ listing.description }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="detail-meta">
+            <div class="detail-meta-item">
+                <div class="detail-meta-label">Дата размещения</div>
+                <div class="detail-meta-value">{{ listing.created_at.strftime('%d.%m.%Y') }}</div>
+            </div>
+            <div class="detail-meta-item">
+                <div class="detail-meta-label">Время звонков</div>
+                <div class="detail-meta-value">с {{ settings.call_time_from }} до {{ settings.call_time_to }}</div>
+            </div>
+            {% if settings.owner_phone %}
+            <div class="detail-meta-item">
+                <div class="detail-meta-label">Телефон</div>
+                <div class="detail-meta-value">{{ settings.owner_phone }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if settings.owner_phone %}
+        <a href="tel:{{ settings.owner_phone }}" class="contact-btn">
+            📞 Позвонить: {{ settings.owner_phone }}
+        </a>
+        {% else %}
+        <a href="{{ url_for('settings') }}" class="contact-btn" style="background: var(--bg-light); color: var(--text-primary);">
+            ⚙️ Настройте номер телефона в разделе "Настройки"
+        </a>
+        {% endif %}
+        
+        <a href="{{ url_for('delete_listing', listing_id=listing.id) }}" 
+           class="btn btn-danger" 
+           style="margin-top: 20px; width: 100%; text-align: center;"
+           onclick="return confirm('Вы уверены, что хотите удалить это объявление?');">
+            🗑️ Удалить объявление
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки - K.Pavely{% endblock %}
+
+{% block content %}
+<div class="settings-form container">
+    <h1 class="form-title">Настройки сайта</h1>
+    
+    <form method="POST">
+        <div class="settings-section">
+            <h3 class="settings-section-title">📞 Время звонков</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
+                Это время будет показываться во всех объявлениях автоматически. Не нужно вводить его каждый раз.
+            </p>
+            <div class="time-inputs">
+                <div class="form-group">
+                    <label for="call_time_from">Звонить с</label>
+                    <input type="time" id="call_time_from" name="call_time_from" class="form-control" 
+                           value="{{ settings.call_time_from if settings else '09:00' }}">
+                </div>
+                <div class="form-group">
+                    <label for="call_time_to">Звонить до</label>
+                    <input type="time" id="call_time_to" name="call_time_to" class="form-control" 
+                           value="{{ settings.call_time_to if settings else '21:00' }}">
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3 class="settings-section-title">👤 Информация о продавце</h3>
+            <div class="form-group">
+                <label for="owner_name">Ваше имя</label>
+                <input type="text" id="owner_name" name="owner_name" class="form-control" 
+                       value="{{ settings.owner_name if settings else 'K.Pavely' }}" placeholder="Например: Павел">
+            </div>
+            <div class="form-group">
+                <label for="owner_phone">Номер телефона</label>
+                <input type="tel" id="owner_phone" name="owner_phone" class="form-control" 
+                       value="{{ settings.owner_phone if settings else '' }}" 
+                       placeholder="Например: +375291234567">
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            💾 Сохранить настройки
+        </button>
+    </form>
+    
+    <a href="{{ url_for('index') }}" class="btn btn-secondary" style="margin-top: 15px; width: 100%; text-align: center;">
+        ← На главную
+    </a>
+</div>
+{% endblock %}

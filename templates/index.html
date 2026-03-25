@@ -1,99 +1,54 @@
 {% extends "base.html" %}
-{% block title %}Yukitery — объявления{% endblock %}
+
+{% block title %}K.Pavely - Автозапчасти{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 32px;">
-    <h1 class="page-title">Находите лучшие предложения</h1>
-    <p class="page-subtitle">Покупайте и продавайте в одном месте</p>
-
-    <!-- Mobile search -->
-    <div style="display:none;" class="mobile-search-show">
-        <form action="{{ url_for('index') }}" method="GET" class="search-form" style="margin-bottom:20px;">
-            <input type="text" name="q" placeholder="Поиск..." value="{{ q }}" class="search-input">
-            <button type="submit" class="search-btn">⌕</button>
-        </form>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content container">
+        <h1>Автозапчасти <span class="highlight">K.Pavely</span></h1>
+        <p>Качественные запчасти для вашего автомобиля. Большой выбор, выгодные цены и быстрая доставка.</p>
     </div>
-</div>
+</section>
 
-<!-- Categories -->
-<div class="categories-bar">
-    <a href="{{ url_for('index', q=q, sort=sort) }}" class="cat-chip {% if not cat %}active{% endif %}">📋 Все</a>
-    {% for c in categories %}
-    <a href="{{ url_for('index', cat=c.slug, q=q, sort=sort) }}" class="cat-chip {% if cat == c.slug %}active{% endif %}">
-        {{ c.icon }} {{ c.name }}
-    </a>
-    {% endfor %}
-</div>
+<!-- Listings Section -->
+<section class="listings-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Доступные запчасти</h2>
+            <a href="{{ url_for('add_listing') }}" class="btn btn-primary">+ Добавить</a>
+        </div>
 
-<!-- Sort bar -->
-<div class="sort-bar">
-    <div class="sort-options">
-        <a href="{{ url_for('index', q=q, cat=cat, sort='new') }}" class="sort-btn {% if sort == 'new' %}active{% endif %}">Новые</a>
-        <a href="{{ url_for('index', q=q, cat=cat, sort='price_asc') }}" class="sort-btn {% if sort == 'price_asc' %}active{% endif %}">Дешевле</a>
-        <a href="{{ url_for('index', q=q, cat=cat, sort='price_desc') }}" class="sort-btn {% if sort == 'price_desc' %}active{% endif %}">Дороже</a>
-        <a href="{{ url_for('index', q=q, cat=cat, sort='popular') }}" class="sort-btn {% if sort == 'popular' %}active{% endif %}">Популярные</a>
+        {% if listings %}
+            <div class="listings-grid">
+                {% for listing in listings %}
+                <a href="{{ url_for('listing_detail', listing_id=listing.id) }}" class="listing-card">
+                    <div class="listing-card-image">
+                        {% if listing.photo %}
+                            <img src="{{ url_for('uploaded_file', filename=listing.photo) }}" alt="{{ listing.name }}">
+                        {% else %}
+                            <div class="no-photo">🚗</div>
+                        {% endif %}
+                    </div>
+                    <div class="listing-card-content">
+                        <h3 class="listing-card-title">{{ listing.name }}</h3>
+                        <div class="listing-card-price">{{ listing.price }} <span>₽</span></div>
+                        <div class="listing-card-meta">
+                            <span>{{ listing.created_at.strftime('%d.%m.%Y') }}</span>
+                            <span>Подробнее →</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🔧</div>
+                <h3>Пока нет объявлений</h3>
+                <p>Станьте первым, кто добавит запчасть!</p>
+                <a href="{{ url_for('add_listing') }}" class="btn btn-primary" style="margin-top: 20px;">Добавить объявление</a>
+            </div>
+        {% endif %}
     </div>
-    <span class="results-count">{{ listings|length }} объявлени{{ 'е' if listings|length == 1 else 'й' }}</span>
-</div>
-
-<!-- Listings grid -->
-{% if listings %}
-<div class="listings-grid">
-    {% for l in listings %}
-    <a href="{{ url_for('listing_detail', listing_id=l.id) }}" class="listing-card">
-        <div class="listing-card-img">
-            {% set imgs = l.images.split(',') if l.images else [] %}
-            {% if imgs and imgs[0] %}
-                <img src="{{ url_for('uploaded_file', filename=imgs[0]) }}" alt="{{ l.title }}" loading="lazy">
-            {% else %}
-                <div class="listing-no-img">📷</div>
-            {% endif %}
-        </div>
-        <div class="listing-card-body">
-            {% if l.cat_name %}
-                <span class="listing-card-cat">{{ l.cat_icon }} {{ l.cat_name }}</span>
-            {% endif %}
-            <div class="listing-card-title">{{ l.title }}</div>
-            <div class="listing-card-price">
-                {% if l.price > 0 %}
-                    {{ "{:,.0f}".format(l.price).replace(",", " ") }} ₽
-                {% else %}
-                    Бесплатно
-                {% endif %}
-            </div>
-            <div class="listing-card-meta">
-                {% if l.city %}<span>📍 {{ l.city }}</span>{% endif %}
-                <span>{{ l.username }}</span>
-            </div>
-        </div>
-    </a>
-    {% endfor %}
-</div>
-
-<!-- Pagination -->
-{% if pages > 1 %}
-<div class="pagination">
-    {% for p in range(1, pages + 1) %}
-        <a href="{{ url_for('index', q=q, cat=cat, sort=sort, page=p) }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
-    {% endfor %}
-</div>
-{% endif %}
-
-{% else %}
-<div class="empty-state">
-    <div class="empty-state-icon">🔍</div>
-    <div class="empty-state-text">Объявлений пока нет</div>
-    {% if current_user %}
-        <a href="{{ url_for('new_listing') }}" class="btn btn-accent">Подать первое объявление</a>
-    {% else %}
-        <a href="{{ url_for('register') }}" class="btn btn-accent">Зарегистрироваться</a>
-    {% endif %}
-</div>
-{% endif %}
-
-<style>
-@media (max-width: 768px) {
-    .mobile-search-show { display: block !important; }
-}
-</style>
+</section>
 {% endblock %}
