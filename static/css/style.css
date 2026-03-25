@@ -930,18 +930,210 @@ textarea.form-control {
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 768px) {
-    .hero h1 {
-        font-size: 2rem;
+/* Mobile phones */
+@media (max-width: 480px) {
+    html {
+        font-size: 14px;
     }
     
-    .hero p {
-        font-size: 1rem;
+    .container {
+        padding: 0 15px;
+    }
+    
+    .header {
+        padding: 12px 0;
+        position: relative;
     }
     
     .header-content {
         flex-direction: column;
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    .logo {
+        font-size: 1.4rem;
+    }
+    
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .nav {
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .nav a {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+    
+    .hero {
+        padding: 40px 0;
+    }
+    
+    .hero h1 {
+        font-size: 1.8rem;
+        padding: 0 10px;
+    }
+    
+    .hero p {
+        font-size: 0.95rem;
+        padding: 0 15px;
+    }
+    
+    .section-header {
+        flex-direction: column;
         gap: 15px;
+        align-items: stretch;
+        padding: 0 10px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .search-bar {
+        padding: 0 10px;
+        gap: 10px;
+    }
+    
+    .search-input, .sort-select, .search-bar .btn {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+    
+    .listings-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 10px;
+    }
+    
+    .listing-card {
+        border-radius: 16px;
+    }
+    
+    .listing-card-image {
+        height: 180px;
+    }
+    
+    .listing-card-content {
+        padding: 16px;
+    }
+    
+    .listing-card-title {
+        font-size: 1.1rem;
+    }
+    
+    .listing-card-price {
+        font-size: 1.5rem;
+    }
+    
+    .form-container {
+        margin: 20px 10px;
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 18px;
+    }
+    
+    .form-control {
+        padding: 14px 16px;
+        font-size: 1rem;
+    }
+    
+    .btn {
+        padding: 14px 20px;
+        font-size: 1rem;
+        width: 100%;
+    }
+    
+    .detail-container {
+        margin: 20px 10px;
+    }
+    
+    .detail-image {
+        height: 220px;
+        border-radius: 16px;
+    }
+    
+    .detail-content {
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .detail-title {
+        font-size: 1.5rem;
+    }
+    
+    .detail-price {
+        font-size: 1.8rem;
+    }
+    
+    .detail-meta {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .settings-form {
+        margin: 20px 10px;
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .time-inputs {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .error-code {
+        font-size: 5rem;
+    }
+    
+    .error-message {
+        font-size: 1.3rem;
+    }
+    
+    .empty-state {
+        padding: 40px 20px;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+    }
+    
+    .flash-messages {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
+
+/* Tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .hero p {
+        font-size: 1.1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 12px;
     }
     
     .nav {
@@ -951,40 +1143,20 @@ textarea.form-control {
     
     .nav a {
         padding: 10px 16px;
-        font-size: 0.85rem;
     }
     
     .listings-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
     
     .form-container {
-        margin: 20px;
-        padding: 25px;
-    }
-    
-    .time-inputs {
-        grid-template-columns: 1fr;
-    }
-    
-    .search-bar {
-        flex-direction: column;
-    }
-    
-    .search-input, .sort-select {
-        width: 100%;
+        margin: 30px 20px;
+        padding: 30px;
     }
     
     .detail-image {
-        height: 280px;
-    }
-    
-    .detail-title {
-        font-size: 1.8rem;
-    }
-    
-    .detail-price {
-        font-size: 1.8rem;
+        height: 300px;
     }
 }
 

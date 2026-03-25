@@ -14,9 +14,18 @@ import smtplib
 
 # ── Config ────────────────────────────────────────────────────────────────────
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'k-pavely-secret-key-2024')
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(32).hex())
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
+
+# Security headers
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
 # Пользователи с правом публикации объявлений
 ADMIN_USERS = ['Kurdun']
