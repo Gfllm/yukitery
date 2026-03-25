@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Написать продавцу - K.Pavely{% endblock %}
+
+{% block content %}
+<div class="form-container container">
+    <h1 class="form-title">Написать продавцу</h1>
+    
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
+        Объявление: <strong>{{ listing_name }}</strong>
+    </p>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="message">Сообщение</label>
+            <textarea id="message" name="message" class="form-control" placeholder="Напишите ваше сообщение продавцу..." required></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            📤 Отправить сообщение
+        </button>
+    </form>
+    
+    <a href="{{ url_for('index') }}" class="btn btn-secondary" style="margin-top: 15px; width: 100%; text-align: center;">
+        ← На главную
+    </a>
+</div>
+{% endblock %}

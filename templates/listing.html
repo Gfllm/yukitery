@@ -42,17 +42,22 @@
             {% endif %}
         </div>
         
-        {% if settings.owner_phone %}
-        <a href="tel:{{ settings.owner_phone }}" class="contact-btn">
-            📞 Позвонить: {{ settings.owner_phone }}
-        </a>
+        {% if session.get('user_id') %}
+            {% if settings.owner_phone %}
+            <a href="tel:{{ settings.owner_phone }}" class="contact-btn">
+                📞 Позвонить: {{ settings.owner_phone }}
+            </a>
+            {% endif %}
+            <a href="{{ url_for('send_message', listing_id=listing.id) }}" class="btn btn-primary" style="margin-top: 15px; width: 100%; text-align: center;">
+                💬 Написать продавцу
+            </a>
         {% else %}
-        <a href="{{ url_for('login') }}" class="contact-btn" style="background: var(--bg-light); color: var(--text-primary);">
-            ⚙️ Настройте номер телефона в разделе "Настройки"
-        </a>
+            <a href="{{ url_for('login') }}" class="contact-btn">
+                📝 Войдите, чтобы написать продавцу
+            </a>
         {% endif %}
         
-        {% if session.get('is_admin') %}
+        {% if session.get('user_id') and can_post_listings() %}
         <a href="{{ url_for('delete_listing', listing_id=listing.id) }}" 
            class="btn btn-danger" 
            style="margin-top: 20px; width: 100%; text-align: center;"

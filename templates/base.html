@@ -17,12 +17,16 @@
             </a>
             <nav class="nav">
                 <a href="{{ url_for('index') }}">Главная</a>
-                {% if session.get('is_admin') %}
-                    <a href="{{ url_for('add_listing') }}" class="btn-primary">Добавить объявление</a>
-                    <a href="{{ url_for('settings') }}">Настройки</a>
-                    <a href="{{ url_for('logout') }}">Выйти</a>
+                {% if session.get('user_id') %}
+                    {% if can_post_listings() %}
+                        <a href="{{ url_for('add_listing') }}" class="btn-primary">Добавить объявление</a>
+                        <a href="{{ url_for('settings') }}">Настройки</a>
+                        <a href="{{ url_for('messages') }}">Сообщения</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}">Выйти ({{ session.get('username') }})</a>
                 {% else %}
                     <a href="{{ url_for('login') }}">Вход</a>
+                    <a href="{{ url_for('register') }}" class="btn-primary">Регистрация</a>
                 {% endif %}
             </nav>
         </div>

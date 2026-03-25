@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Подтверждение email - K.Pavely{% endblock %}
+
+{% block content %}
+<div class="form-container container">
+    <h1 class="form-title">Подтверждение email</h1>
+    
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
+        Код подтверждения отправлен на email: <strong>{{ email }}</strong>
+    </p>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="code">Код подтверждения</label>
+            <input type="text" id="code" name="code" class="form-control" placeholder="Введите 6-значный код" maxlength="6" required autofocus>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            ✅ Подтвердить
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <p style="color: var(--text-muted);">Не получили код? Проверьте папку "Спам" или попробуйте зарегистрироваться заново.</p>
+    </div>
+    
+    <a href="{{ url_for('index') }}" class="btn btn-secondary" style="margin-top: 15px; width: 100%; text-align: center;">
+        ← На главную
+    </a>
+</div>
+{% endblock %}

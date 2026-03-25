@@ -1,47 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Сообщения — Yukitery{% endblock %}
+
+{% block title %}Сообщения - K.Pavely{% endblock %}
 
 {% block content %}
-<h1 class="page-title">Сообщения</h1>
-<p class="page-subtitle">Ваши диалоги с покупателями и продавцами</p>
-
-{% if conversations %}
-<div class="conv-list">
-    {% for c in conversations %}
-    <a href="{{ url_for('chat_room', conv_id=c.id) }}" class="conv-item">
-        <div class="conv-avatar">
-            {% set imgs = c.listing_images.split(',') if c.listing_images else [] %}
-            {% if imgs and imgs[0] %}
-                <img src="{{ url_for('uploaded_file', filename=imgs[0]) }}" alt="">
-            {% else %}
-                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:1.5rem;">💬</div>
-            {% endif %}
-        </div>
-        <div class="conv-body">
-            <div class="conv-title">
-                {{ c.listing_title }}
-                <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem;">
-                    — {% if c.buyer_id == current_user.id %}{{ c.seller_name }}{% else %}{{ c.buyer_name }}{% endif %}
-                </span>
+<div class="form-container container" style="max-width: 800px;">
+    <h1 class="form-title">Сообщения</h1>
+    
+    {% if messages %}
+        <div class="listings-grid">
+            {% for msg in messages %}
+            <div class="listing-card" style="padding: 20px;">
+                <div class="listing-card-content">
+                    {% if msg.listing_name %}
+                    <h3 class="listing-card-title">{{ msg.listing_name }}</h3>
+                    {% else %}
+                    <h3 class="listing-card-title">Общее сообщение</h3>
+                    {% endif %}
+                    
+                    <p style="color: var(--text-secondary); margin: 10px 0;">
+                        {{ msg.message }}
+                    </p>
+                    
+                    <div class="listing-card-meta">
+                        <span>От: {{ msg.username }}</span>
+                        <span>{{ msg.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    </div>
+                </div>
             </div>
-            <div class="conv-last-msg">{{ c.last_msg or 'Нет сообщений' }}</div>
+            {% endfor %}
         </div>
-        <div class="conv-meta">
-            {% if c.last_msg_time %}
-            <div class="conv-time">{{ c.last_msg_time[11:16] }}</div>
-            {% endif %}
-            {% if c.unread > 0 %}
-            <div class="conv-unread">{{ c.unread }}</div>
-            {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <h3>Нет сообщений</h3>
+            <p>Сообщений пока нет.</p>
         </div>
+    {% endif %}
+    
+    <a href="{{ url_for('index') }}" class="btn btn-secondary" style="margin-top: 20px; width: 100%; text-align: center;">
+        ← На главную
     </a>
-    {% endfor %}
 </div>
-{% else %}
-<div class="empty-state">
-    <div class="empty-state-icon">💬</div>
-    <div class="empty-state-text">У вас пока нет сообщений</div>
-    <a href="{{ url_for('index') }}" class="btn btn-accent">Найти объявления</a>
-</div>
-{% endif %}
 {% endblock %}
